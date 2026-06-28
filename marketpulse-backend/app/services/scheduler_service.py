@@ -94,8 +94,10 @@ def run_alert_evaluation_job(db: Session) -> dict:
 
 
 def get_scheduler_status() -> dict:
+    mode = "background-enabled" if settings.SCHEDULER_ENABLED else "manual-run-once"
+
     return {
         "scheduler_enabled": settings.SCHEDULER_ENABLED,
         "interval_minutes": settings.SCHEDULER_INTERVAL_MINUTES,
-        "mode": "manual-run-once",
+        "mode": mode,
     }

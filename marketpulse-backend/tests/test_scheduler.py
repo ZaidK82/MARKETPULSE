@@ -100,7 +100,7 @@ def test_scheduler_status(client: TestClient):
 
     assert "scheduler_enabled" in data
     assert "interval_minutes" in data
-    assert data["mode"] == "manual-run-once"
+    assert data["mode"] in {"manual-run-once", "background-enabled"}
 
 
 def test_scheduler_run_once_with_no_rules(client: TestClient):

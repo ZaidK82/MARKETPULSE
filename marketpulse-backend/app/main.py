@@ -5,12 +5,17 @@ from fastapi import FastAPI
 from app.api.v1.router import api_router
 from app.config import settings
 from app.core.init_db import create_db_and_tables
+from app.core.scheduler import shutdown_scheduler, start_scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
+    start_scheduler()
+
     yield
+
+    shutdown_scheduler()
 
 
 def create_app() -> FastAPI:
