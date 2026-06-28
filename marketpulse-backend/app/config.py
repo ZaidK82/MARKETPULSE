@@ -12,6 +12,9 @@ class Settings(BaseSettings):
 
     DISCORD_WEBHOOK_URL: str | None = None
 
+    SCHEDULER_ENABLED: bool = False
+    SCHEDULER_INTERVAL_MINUTES: int = 15
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

@@ -7,6 +7,7 @@ from app.api.v1 import (
     indicators,
     market_data,
     notifications,
+    scheduler,
     stocks,
     watchlist,
 )
@@ -22,3 +23,4 @@ api_router.include_router(indicators.router)
 api_router.include_router(alert_rules.router)
 api_router.include_router(evaluation.router)
 api_router.include_router(notifications.router)
+api_router.include_router(scheduler.router)
