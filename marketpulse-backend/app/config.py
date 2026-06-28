@@ -10,6 +10,8 @@ class Settings(BaseSettings):
 
     API_V1_PREFIX: str = "/api/v1"
 
+    DISCORD_WEBHOOK_URL: str | None = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

@@ -6,6 +6,7 @@ from app.api.v1 import (
     health,
     indicators,
     market_data,
+    notifications,
     stocks,
     watchlist,
 )
@@ -20,3 +21,4 @@ api_router.include_router(market_data.router)
 api_router.include_router(indicators.router)
 api_router.include_router(alert_rules.router)
 api_router.include_router(evaluation.router)
+api_router.include_router(notifications.router)
