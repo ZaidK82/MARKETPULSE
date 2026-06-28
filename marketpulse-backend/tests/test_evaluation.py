@@ -272,3 +272,47 @@ def test_evaluate_rule_when_current_price_missing_returns_400(client: TestClient
         )
 
     assert response.status_code == 400
+
+def test_evaluate_triggered_rule_does_not_create_duplicate_event_during_cooldown(
+    client: TestClient,
+):
+    stock_id = create_test_stock(client)
+
+    rule = create_test_alert_rule(
+        client=client,
+        stock_id=stock_id,
+        indicator="close_price",
+        operator=">",
+        target_value=100,
+    )
+
+    with patch(
+        "app.services.evaluation_service.fetch_quote",
+        return_value={
+            "symbol": "AAPL",
+            "current_price": 150.0,
+        },
+    ), patch(
+        "app.services.evaluation_service.settings.ALERT_COOLDOWN_MINUTES",
+        60,
+    ):
+        first_response = client.post(
+            f"/api/v1/evaluation/alert-rules/{rule['id']}/evaluate"
+        )
+
+        second_response = client.post(
+            f"/api/v1/evaluation/alert-rules/{rule['id']}/evaluate"
+        )
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+
+    first_data = first_response.json()
+    second_data = second_response.json()
+
+    assert first_data["triggered"] is True
+    assert first_data["alert_event_id"] is not None
+
+    assert second_data["triggered"] is True
+    assert second_data["alert_event_id"] is None
+    assert "Cooldown active" in second_data["message"]

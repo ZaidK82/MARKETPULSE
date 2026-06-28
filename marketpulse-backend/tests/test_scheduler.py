@@ -105,7 +105,8 @@ def test_scheduler_status(client: TestClient):
 
 
 def test_scheduler_run_once_with_no_rules(client: TestClient):
-    response = client.post("/api/v1/scheduler/run-once")
+    with patch("app.api.v1.scheduler.settings.CRON_SECRET", "test-secret"):
+        response = post_run_once(client)
 
     assert response.status_code == 200
 
@@ -123,6 +124,9 @@ def test_scheduler_run_once_triggered_and_notification_sent(client: TestClient):
     create_test_alert_rule(client, stock_id, target_value=100)
 
     with patch(
+        "app.api.v1.scheduler.settings.CRON_SECRET",
+        "test-secret",
+    ), patch(
         "app.services.evaluation_service.fetch_quote",
         return_value={
             "symbol": "AAPL",
@@ -138,7 +142,7 @@ def test_scheduler_run_once_triggered_and_notification_sent(client: TestClient):
             "notification_log_id": 1,
         },
     ):
-        response = client.post("/api/v1/scheduler/run-once")
+        response = post_run_once(client)
 
     assert response.status_code == 200
 
@@ -156,13 +160,16 @@ def test_scheduler_run_once_not_triggered(client: TestClient):
     create_test_alert_rule(client, stock_id, target_value=200)
 
     with patch(
+        "app.api.v1.scheduler.settings.CRON_SECRET",
+        "test-secret",
+    ), patch(
         "app.services.evaluation_service.fetch_quote",
         return_value={
             "symbol": "AAPL",
             "current_price": 150.0,
         },
     ):
-        response = client.post("/api/v1/scheduler/run-once")
+        response = post_run_once(client)
 
     assert response.status_code == 200
 
@@ -180,6 +187,9 @@ def test_scheduler_run_once_notification_failure_is_recorded(client: TestClient)
     create_test_alert_rule(client, stock_id, target_value=100)
 
     with patch(
+        "app.api.v1.scheduler.settings.CRON_SECRET",
+        "test-secret",
+    ), patch(
         "app.services.evaluation_service.fetch_quote",
         return_value={
             "symbol": "AAPL",
@@ -189,7 +199,7 @@ def test_scheduler_run_once_notification_failure_is_recorded(client: TestClient)
         "app.services.scheduler_service.send_discord_notification",
         side_effect=Exception("Discord failed"),
     ):
-        response = client.post("/api/v1/scheduler/run-once")
+        response = post_run_once(client)
 
     assert response.status_code == 200
 
@@ -216,3 +226,59 @@ def test_scheduler_run_once_accepts_valid_secret_when_configured(client: TestCli
         )
 
     assert response.status_code == 200
+
+def test_scheduler_run_once_skips_duplicate_notification_during_cooldown(
+    client: TestClient,
+):
+    stock_id = create_test_stock(client)
+    create_test_alert_rule(client, stock_id, target_value=100)
+
+    with patch(
+        "app.api.v1.scheduler.settings.CRON_SECRET",
+        "test-secret",
+    ), patch(
+        "app.services.evaluation_service.fetch_quote",
+        return_value={
+            "symbol": "AAPL",
+            "current_price": 150.0,
+        },
+    ), patch(
+        "app.services.evaluation_service.settings.ALERT_COOLDOWN_MINUTES",
+        60,
+    ), patch(
+        "app.services.scheduler_service.send_discord_notification",
+        return_value={
+            "alert_event_id": 1,
+            "channel": "discord",
+            "status": "sent",
+            "response_message": "Discord notification sent successfully.",
+            "notification_log_id": 1,
+        },
+    ) as mock_send:
+        first_response = post_run_once(client)
+        second_response = post_run_once(client)
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+
+    first_data = first_response.json()
+    second_data = second_response.json()
+
+    assert first_data["evaluated_rules"] == 1
+    assert first_data["triggered_rules"] == 1
+    assert first_data["notifications_attempted"] == 1
+    assert first_data["notifications_sent"] == 1
+
+    assert second_data["evaluated_rules"] == 1
+    assert second_data["triggered_rules"] == 1
+    assert second_data["notifications_attempted"] == 0
+    assert second_data["notifications_sent"] == 0
+    assert second_data["errors"] == []
+
+    assert mock_send.call_count == 1
+
+def post_run_once(client: TestClient):
+    return client.post(
+        "/api/v1/scheduler/run-once",
+        headers={"x-cron-secret": "test-secret"},
+    )

@@ -56,7 +56,6 @@ def run_alert_evaluation_job(db: Session) -> dict:
         alert_event_id = evaluation_result.get("alert_event_id")
 
         if alert_event_id is None:
-            errors.append(f"Rule {rule.id}: triggered but no alert event was created.")
             continue
 
         alert_event = _get_alert_event_by_id(

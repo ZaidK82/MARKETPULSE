@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     SCHEDULER_INTERVAL_MINUTES: int = 15
 
     CRON_SECRET: str | None = None
+    
+    ALERT_COOLDOWN_MINUTES: int = 60
 
     model_config = SettingsConfigDict(
         env_file=".env",

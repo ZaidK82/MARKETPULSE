@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from sqlalchemy.orm import Session
 
 from app.models.alert_event import AlertEvent
@@ -26,6 +28,13 @@ def create_alert_event(
     return alert_event
 
 
+def get_alert_event_by_id(
+    db: Session,
+    alert_event_id: int,
+) -> AlertEvent | None:
+    return db.query(AlertEvent).filter(AlertEvent.id == alert_event_id).first()
+
+
 def get_alert_events(
     db: Session,
     skip: int = 0,
@@ -43,3 +52,34 @@ def get_alert_events_by_rule_id(
         .filter(AlertEvent.alert_rule_id == alert_rule_id)
         .all()
     )
+
+
+def get_latest_alert_event_by_rule_id(
+    db: Session,
+    alert_rule_id: int,
+) -> AlertEvent | None:
+    return (
+        db.query(AlertEvent)
+        .filter(AlertEvent.alert_rule_id == alert_rule_id)
+        .order_by(AlertEvent.triggered_at.desc())
+        .first()
+    )
+
+
+def has_recent_alert_event_for_rule(
+    db: Session,
+    alert_rule_id: int,
+    cooldown_minutes: int,
+) -> bool:
+    cooldown_threshold = datetime.now(timezone.utc) - timedelta(
+        minutes=cooldown_minutes
+    )
+
+    recent_alert_event = (
+        db.query(AlertEvent)
+        .filter(AlertEvent.alert_rule_id == alert_rule_id)
+        .filter(AlertEvent.triggered_at >= cooldown_threshold)
+        .first()
+    )
+
+    return recent_alert_event is not None

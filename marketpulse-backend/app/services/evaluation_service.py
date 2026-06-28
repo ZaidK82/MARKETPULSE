@@ -2,7 +2,8 @@ from typing import Callable
 
 from sqlalchemy.orm import Session
 
-from app.crud.alert_event import create_alert_event
+from app.config import settings
+from app.crud.alert_event import create_alert_event, has_recent_alert_event_for_rule
 from app.models.alert_rule import AlertRule
 from app.models.stock import Stock
 from app.services.indicator_service import (
@@ -167,16 +168,28 @@ def evaluate_alert_rule(
     alert_event_id = None
 
     if triggered:
-        alert_event = create_alert_event(
+        cooldown_active = has_recent_alert_event_for_rule(
             db=db,
             alert_rule_id=alert_rule.id,
-            stock_symbol=stock.symbol,
-            triggered_value=current_value,
-            target_value=alert_rule.target_value,
-            message=message,
+            cooldown_minutes=settings.ALERT_COOLDOWN_MINUTES,
         )
 
-        alert_event_id = alert_event.id
+        if cooldown_active:
+            message = (
+                f"{message} Cooldown active: duplicate alert skipped "
+                f"for {settings.ALERT_COOLDOWN_MINUTES} minutes."
+            )
+        else:
+            alert_event = create_alert_event(
+                db=db,
+                alert_rule_id=alert_rule.id,
+                stock_symbol=stock.symbol,
+                triggered_value=current_value,
+                target_value=alert_rule.target_value,
+                message=message,
+            )
+
+            alert_event_id = alert_event.id
 
     return {
         "rule_id": alert_rule.id,
