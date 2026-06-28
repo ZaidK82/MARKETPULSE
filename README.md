@@ -1,16 +1,36 @@
-# MarketPulse — Stock Alert System Backend
+# MarketPulse — Stock Alert System
 
-MarketPulse is a FastAPI-based stock alert backend that allows users to track stocks, create custom alert rules, evaluate market conditions, and send Discord notifications when bullish or bearish conditions are triggered.
+MarketPulse is a full-stack stock alert system with a FastAPI backend and a React + Vite frontend dashboard.
 
-The project is designed as a backend-first portfolio project demonstrating API design, stock market data integration, technical indicator calculation, rule-based alert evaluation, notification delivery, scheduled jobs, and automated cron execution.
+The system allows users to track stocks, manage watchlists, create custom alert rules, evaluate market conditions, view alert history, inspect notification logs, and manually trigger scheduled alert evaluation.
+
+The project demonstrates API design, stock market data integration, technical indicator calculation, rule-based alert evaluation, Discord notification delivery, scheduled jobs, GitHub Actions cron support, and frontend-backend integration.
 
 ---
 
 ## Features
 
+### Frontend Dashboard
+
+MarketPulse includes a React + Vite frontend dashboard connected to the FastAPI backend.
+
+The dashboard currently supports:
+
+* Live backend health and readiness status
+* Stock count, watchlist count, alert rule count, and alert event count
+* Stock registry management
+* Watchlist management
+* Quote lookup through the backend market data API
+* Alert rule creation, editing, disabling, deletion, and manual evaluation
+* Alert event history
+* Discord notification log viewing
+* Manual Discord resend action for alert events
+* Scheduler status view
+* Manual scheduler run-once control
+
 ### Stock and Watchlist Management
 
-* Add stocks with symbol, name, and exchange
+* Add stocks with symbol, name, exchange, and currency
 * List tracked stocks
 * Add stocks to a watchlist
 * Soft-delete watchlist items
@@ -86,6 +106,8 @@ This is useful for free deployment environments where always-on background worke
 
 ## Tech Stack
 
+### Backend
+
 * Python
 * FastAPI
 * SQLAlchemy
@@ -97,6 +119,15 @@ This is useful for free deployment environments where always-on background worke
 * Discord Webhooks
 * pytest
 * GitHub Actions
+
+### Frontend
+
+* React
+* Vite
+* Tailwind CSS
+* Axios
+* React Router
+* Lucide React
 
 ---
 
@@ -112,21 +143,33 @@ MARKETPULSE/
 ├── docs/
 │   └── screenshots/
 │
-└── marketpulse-backend/
-    ├── app/
+├── marketpulse-backend/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── core/
+│   │   ├── crud/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   ├── config.py
+│   │   └── main.py
+│   │
+│   ├── tests/
+│   ├── .env.example
+│   ├── pytest.ini
+│   └── requirements.txt
+│
+└── marketpulse-frontend/
+    ├── src/
     │   ├── api/
-    │   ├── core/
-    │   ├── crud/
-    │   ├── models/
-    │   ├── schemas/
-    │   ├── services/
-    │   ├── config.py
-    │   └── main.py
+    │   ├── components/
+    │   ├── layouts/
+    │   ├── pages/
+    │   └── routes/
     │
-    ├── tests/
     ├── .env.example
-    ├── pytest.ini
-    └── requirements.txt
+    ├── package.json
+    └── vite.config.js
 ```
 
 ---
@@ -134,7 +177,7 @@ MARKETPULSE/
 ## Backend Architecture
 
 ```txt
-Client / GitHub Actions / Scheduler
+Client / Frontend / GitHub Actions / Scheduler
         ↓
 FastAPI Routes
         ↓
@@ -151,7 +194,7 @@ Market data is fetched through `yfinance`, indicators are calculated in the serv
 
 ---
 
-## Environment Variables
+## Backend Environment Variables
 
 Create a `.env` file inside `marketpulse-backend/`.
 
@@ -174,7 +217,7 @@ CRON_SECRET=
 ALERT_COOLDOWN_MINUTES=60
 ```
 
-### Variable Reference
+### Backend Variable Reference
 
 | Variable                     | Purpose                                   |
 | ---------------------------- | ----------------------------------------- |
@@ -191,7 +234,7 @@ ALERT_COOLDOWN_MINUTES=60
 
 ---
 
-## Local Setup
+## Backend Setup
 
 ### 1. Clone the repository
 
@@ -241,6 +284,43 @@ Swagger documentation:
 ```txt
 http://127.0.0.1:8000/docs
 ```
+
+---
+
+## Frontend Setup
+
+From the repository root:
+
+```bash
+cd marketpulse-frontend
+npm install
+```
+
+Create a `.env` file inside `marketpulse-frontend/`.
+
+```env
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+Run the frontend:
+
+```bash
+npm run dev
+```
+
+The frontend will be available at:
+
+```txt
+http://localhost:5173
+```
+
+Build the frontend:
+
+```bash
+npm run build
+```
+
+The FastAPI backend should be running before using the frontend dashboard.
 
 ---
 
@@ -334,6 +414,18 @@ Current test status:
 
 ---
 
+## Frontend Pages
+
+| Page          | Route        | Description                                                                    |
+| ------------- | ------------ | ------------------------------------------------------------------------------ |
+| Dashboard     | `/`          | Shows backend status, readiness, counts, scheduler status, and raw system data |
+| Stocks        | `/stocks`    | Manage tracked stocks, watchlist entries, and quote lookup                     |
+| Alert Rules   | `/alerts`    | Create, edit, disable, delete, and manually evaluate alert rules               |
+| Alert History | `/history`   | View alert events and Discord notification logs                                |
+| Scheduler     | `/scheduler` | View scheduler status and manually trigger scheduler run-once                  |
+
+---
+
 ## GitHub Actions Cron
 
 The project includes:
@@ -401,7 +493,7 @@ NotificationLog is stored
 
 ---
 
-## Current Backend Status
+## Current Project Status
 
 ```txt
 Completed:
@@ -418,6 +510,13 @@ Completed:
 - GitHub Actions cron support
 - Duplicate alert cooldown protection
 - Test cleanup and pytest configuration
+- React + Vite frontend setup
+- Frontend API service layer
+- Live dashboard metrics
+- Stocks and watchlist frontend page
+- Alert rules management page
+- Alert history and notification logs page
+- Scheduler control page
 ```
 
 ---
@@ -426,7 +525,7 @@ Completed:
 
 * User authentication
 * PostgreSQL support
-* Frontend dashboard
+* Frontend deployment
 * Email or Telegram notifications
 * More indicators
 * Advanced alert strategies
