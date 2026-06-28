@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
+from unittest.mock import patch
 
 from app import models  # noqa: F401
 from app.core.database import Base, get_db
@@ -199,3 +200,19 @@ def test_scheduler_run_once_notification_failure_is_recorded(client: TestClient)
     assert data["notifications_attempted"] == 1
     assert data["notifications_sent"] == 0
     assert len(data["errors"]) == 1
+
+def test_scheduler_run_once_requires_valid_secret_when_configured(client: TestClient):
+    with patch("app.api.v1.scheduler.settings.CRON_SECRET", "test-secret"):
+        response = client.post("/api/v1/scheduler/run-once")
+
+    assert response.status_code == 401
+
+
+def test_scheduler_run_once_accepts_valid_secret_when_configured(client: TestClient):
+    with patch("app.api.v1.scheduler.settings.CRON_SECRET", "test-secret"):
+        response = client.post(
+            "/api/v1/scheduler/run-once",
+            headers={"x-cron-secret": "test-secret"},
+        )
+
+    assert response.status_code == 200

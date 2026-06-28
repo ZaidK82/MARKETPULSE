@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     SCHEDULER_ENABLED: bool = False
     SCHEDULER_INTERVAL_MINUTES: int = 15
 
+    CRON_SECRET: str | None = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
