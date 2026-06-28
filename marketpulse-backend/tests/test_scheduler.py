@@ -12,6 +12,11 @@ from app import models  # noqa: F401
 from app.core.database import Base, get_db
 from app.main import app
 
+from tests.helpers import (
+    create_test_alert_rule,
+    create_test_stock,
+    post_scheduler_run_once,
+)
 
 TEST_DATABASE_URL = "sqlite://"
 
@@ -57,41 +62,6 @@ def client(db_session: Session) -> Generator[TestClient, None, None]:
     app.dependency_overrides.clear()
 
 
-def create_test_stock(client: TestClient) -> int:
-    response = client.post(
-        "/api/v1/stocks",
-        json={
-            "symbol": "AAPL",
-            "name": "Apple Inc.",
-            "exchange": "NASDAQ",
-            "currency": "USD",
-        },
-    )
-
-    return response.json()["id"]
-
-
-def create_test_alert_rule(
-    client: TestClient,
-    stock_id: int,
-    target_value: float = 100,
-) -> dict:
-    response = client.post(
-        "/api/v1/alert-rules",
-        json={
-            "stock_id": stock_id,
-            "name": "AAPL Close Price Above Target",
-            "indicator": "close_price",
-            "operator": ">",
-            "target_value": target_value,
-            "direction": "bullish",
-            "timeframe": "1d",
-        },
-    )
-
-    return response.json()
-
-
 def test_scheduler_status(client: TestClient):
     response = client.get("/api/v1/scheduler/status")
 
@@ -106,7 +76,7 @@ def test_scheduler_status(client: TestClient):
 
 def test_scheduler_run_once_with_no_rules(client: TestClient):
     with patch("app.api.v1.scheduler.settings.CRON_SECRET", "test-secret"):
-        response = post_run_once(client)
+        response = post_scheduler_run_once(client)
 
     assert response.status_code == 200
 
@@ -142,7 +112,7 @@ def test_scheduler_run_once_triggered_and_notification_sent(client: TestClient):
             "notification_log_id": 1,
         },
     ):
-        response = post_run_once(client)
+        response = post_scheduler_run_once(client)
 
     assert response.status_code == 200
 
@@ -169,7 +139,7 @@ def test_scheduler_run_once_not_triggered(client: TestClient):
             "current_price": 150.0,
         },
     ):
-        response = post_run_once(client)
+        response = post_scheduler_run_once(client)
 
     assert response.status_code == 200
 
@@ -199,7 +169,7 @@ def test_scheduler_run_once_notification_failure_is_recorded(client: TestClient)
         "app.services.scheduler_service.send_discord_notification",
         side_effect=Exception("Discord failed"),
     ):
-        response = post_run_once(client)
+        response = post_scheduler_run_once(client)
 
     assert response.status_code == 200
 
@@ -255,8 +225,8 @@ def test_scheduler_run_once_skips_duplicate_notification_during_cooldown(
             "notification_log_id": 1,
         },
     ) as mock_send:
-        first_response = post_run_once(client)
-        second_response = post_run_once(client)
+        first_response = post_scheduler_run_once(client)
+        second_response = post_scheduler_run_once(client)
 
     assert first_response.status_code == 200
     assert second_response.status_code == 200
@@ -277,8 +247,3 @@ def test_scheduler_run_once_skips_duplicate_notification_during_cooldown(
 
     assert mock_send.call_count == 1
 
-def post_run_once(client: TestClient):
-    return client.post(
-        "/api/v1/scheduler/run-once",
-        headers={"x-cron-secret": "test-secret"},
-    )

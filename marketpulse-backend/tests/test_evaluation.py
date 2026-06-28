@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
+from tests.helpers import create_test_alert_rule, create_test_stock
 
 from app import models  # noqa: F401
 from app.core.database import Base, get_db
