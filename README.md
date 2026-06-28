@@ -142,6 +142,11 @@ MARKETPULSE/
 │
 ├── docs/
 │   └── screenshots/
+│       ├── Dashboard.png
+│       ├── Stocks.png
+│       ├── Alert_Rules.png
+│       ├── Alert_History.png
+│       └── Scheduler.png
 │
 ├── marketpulse-backend/
 │   ├── app/
@@ -423,6 +428,36 @@ Current test status:
 | Alert Rules   | `/alerts`    | Create, edit, disable, delete, and manually evaluate alert rules               |
 | Alert History | `/history`   | View alert events and Discord notification logs                                |
 | Scheduler     | `/scheduler` | View scheduler status and manually trigger scheduler run-once                  |
+
+---
+
+
+## Screenshots
+
+Frontend screenshots are stored in:
+
+```txt
+docs/screenshots/
+
+### Dashboard
+
+![Dashboard](docs/screenshots/Dashboard.png)
+
+### Stocks & Watchlist
+
+![Stocks](docs/screenshots/Stocks.png)
+
+### Alert Rules
+
+![Alert Rules](docs/screenshots/Alert_Rules.png)
+
+### Alert History
+
+![Alert History](docs/screenshots/Alert_History.png)
+
+### Scheduler
+
+![Scheduler](docs/screenshots/Scheduler.png)
 
 ---
 
