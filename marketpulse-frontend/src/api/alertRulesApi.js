@@ -1,7 +1,12 @@
 import { apiClient } from "./client";
 
-export async function getAlertRules() {
-  const response = await apiClient.get("/api/v1/alert-rules");
+export async function getAlertRules(activeOnly = false) {
+  const response = await apiClient.get("/api/v1/alert-rules", {
+    params: {
+      active_only: activeOnly,
+    },
+  });
+
   return response.data;
 }
 
@@ -20,6 +25,7 @@ export async function updateAlertRule(ruleId, payload) {
     `/api/v1/alert-rules/${ruleId}`,
     payload
   );
+
   return response.data;
 }
 

@@ -171,7 +171,9 @@ export default function Dashboard() {
 
         <StatCard
           label="Scheduler"
-          value={dashboard.scheduler?.enabled ? "Enabled" : "Manual / Disabled"}
+          value={
+            dashboard.scheduler?.scheduler_enabled ? "Enabled" : "Manual / Disabled"
+          }
           helper="Scheduler lifecycle status"
           loading={loading}
         />
