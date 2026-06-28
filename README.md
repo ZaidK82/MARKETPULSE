@@ -430,14 +430,21 @@ Current test status:
 | Scheduler     | `/scheduler` | View scheduler status and manually trigger scheduler run-once                  |
 
 ---
-
-
 ## Screenshots
 
 Frontend screenshots are stored in:
 
 ```txt
 docs/screenshots/
+```
+
+| Page | Screenshot Path |
+| ---- | --------------- |
+| Dashboard | `docs/screenshots/Dashboard.png` |
+| Stocks & Watchlist | `docs/screenshots/Stocks.png` |
+| Alert Rules | `docs/screenshots/Alert_Rules.png` |
+| Alert History | `docs/screenshots/Alert_History.png` |
+| Scheduler | `docs/screenshots/Scheduler.png` |
 
 ### Dashboard
 
@@ -445,7 +452,7 @@ docs/screenshots/
 
 ### Stocks & Watchlist
 
-![Stocks](docs/screenshots/Stocks.png)
+![Stocks & Watchlist](docs/screenshots/Stocks.png)
 
 ### Alert Rules
 
@@ -460,7 +467,6 @@ docs/screenshots/
 ![Scheduler](docs/screenshots/Scheduler.png)
 
 ---
-
 ## GitHub Actions Cron
 
 The project includes:
