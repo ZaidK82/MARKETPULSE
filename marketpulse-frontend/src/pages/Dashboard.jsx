@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { checkBackendHealth } from "../api/client";
+import { getHealth } from "../api/healthApi";
 
 export default function Dashboard() {
   const [health, setHealth] = useState(null);
@@ -8,7 +8,7 @@ export default function Dashboard() {
   useEffect(() => {
     async function loadHealth() {
       try {
-        const data = await checkBackendHealth();
+        const data = await getHealth();
         setHealth(data);
       } catch (err) {
         setError("Unable to connect to backend. Check if FastAPI is running.");
